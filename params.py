@@ -1,0 +1,2 @@
+
+dbPath = "data/blockchain.pkl"
