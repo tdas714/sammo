@@ -1,5 +1,5 @@
-# sammo
-AI based de-centralized network for all walks of people.
+# sammo(Prototype)
+Python Based AI based de-centralized network for all walks of people.
 
 ### TO-DO:
 1. Design a transaction that can be encrypted yet can be varified.
