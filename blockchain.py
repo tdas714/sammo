@@ -1,12 +1,12 @@
 import pickle
 import os
 import sys
-import paramas as prm
-
- class Blockchain():
-     def __init__(self, lastHash, database)
-        self.lastHash = lastHash
-        self.database = database
+import params as prm
+from transaction import CoinbaseTxn
+class Blockchain():
+    def __init__(self, lastHash, database):
+       self.lastHash = lastHash
+       self.database = database
 
 def DbExists(path):
     if os.path.exists(path):
@@ -41,4 +41,6 @@ def InitBlockchain(nodeid, address):
     db['lasthash'] = genesis.hash
     chain = Blockchain(genesis.hash, db)
     return chain
-    
+ 
+if __name__ == '__main__':
+    InitBlockchain('2000', "address")

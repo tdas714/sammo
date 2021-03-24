@@ -1,4 +1,4 @@
 
 dbPath = "data/blockchain.pkl"
-genesisData = "This is the Genesis Block"a
+genesisData = "This is the Genesis Block"
 mineReward = 20
