@@ -37,7 +37,7 @@ def InitBlockchain(nodeid, address):
     cbtx = CoinbaseTxn(address, prm.genesisData)
     genesis = Genesis(cbtx)
     print('Genesis Block created!')
-    db['db'] = [genesis.hash, genesis.Serialize()]
+    db['db'] = [genesis.blockhash, genesis.encode()]
     db['lasthash'] = genesis.hash
     chain = Blockchain(genesis.hash, db)
     return chain
