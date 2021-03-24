@@ -1,5 +1,7 @@
 import json
 import time
+from proof import NewProof
+from merkle import NewMerkleTree
 
 class Block():
     def __init__(self, timestamp, blockhash, transactions,
@@ -10,8 +12,8 @@ class Block():
         self.prevhash = prevhash
         self.nonce = nonce
         self.height = height
-    def __repr(self):
-        return str(self.__dict__)
+    def __repr__(self):
+        return f'{self.timestamp} {self.blockhash} {self.transactions} {self.prevhash} {self.nonce} {self.height}'
     def encode(self):
         return self.__repr__().encode()
     
@@ -23,12 +25,14 @@ class Block():
         return tree.RootNode.Data
 
 def CreateBlock(txs, prevhash, height):
-    block = Block(time.time(), bytearray(), txs, prevhash, 0, height)
-    pow = NewProof(block)
-    nonce, datahash = pow.run()
+    block = Block(time.time(), [], txs, prevhash, 0, height)
+    print('Block')
+    input(block)
+    proof = NewProof(block)
+    nonce, datahash = proof.run()
     block.blockhash = datahash
     block.nonce = nonce
     return block
 
 def Genesis(cbtx):
-    return CreateBlock([cbtx], bytearray(), 0)
+    return CreateBlock([cbtx], [], 0)

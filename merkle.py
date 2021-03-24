@@ -2,7 +2,7 @@ from hashlib import sha256
 
 class MerkleTree():
     def __init__(self, rootnode):
-        self.RootNode
+        self.RootNode = rootnode
 
 class MerkleNode():
     def __init__(self, left='', right='', data=''):
@@ -14,11 +14,11 @@ def NewMerkleNode(left, right, data):
     node = MerkleNode()
 
     if left==None and right==None:
-        datahash = sha256(data.encode()).hexdigest()
+        datahash = sha256(data).hexdigest()
         node.Data = datahash
     else:
         prevhashs = left.Data.append(right.Data)
-        datahash = sha256(prevhashs.encode()).hexdigest()
+        datahash = sha256(prevhashs).hexdigest()
         node.Data = datahash
 
     node.Left = left
@@ -34,14 +34,15 @@ def NewMerkleTree(data):
         print("No merkle nodes found")
         sys.exit()
 
-    for len(nodes) > 1:
+    while True:
+        if len(nodes) <= 1:
+            break
         if len(nodes)%2 != 0:
             nodes.append(nodes[len(nodes)-1])
-
         level = []
         for i in range(len(nodes), 2):
             level.append(NewMerkleNode(nodes[i], nodes[i+1], None))
-            
+        
         nodes = level
     tree = MerkleTree(nodes[0])
     return tree

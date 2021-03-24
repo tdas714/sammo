@@ -3,7 +3,7 @@ import os
 import params as prm
 import hashlib
 import json
-from tx import TxInput, TxOutput
+from tx import TxInput, TxOutput, NewTxOutput
 
 class Transaction():
     def __init__(self, ID, inputs, outputs):
@@ -12,7 +12,7 @@ class Transaction():
         self.outputs = outputs
         
     def __repr__(self):
-        return str(self.__dict__)
+        return f'{self.ID} {self.inputs} {self.outputs}'
     def encode(self):
         return self.__repr__().encode()
     #@property
@@ -27,9 +27,8 @@ class Transaction():
 def CoinbaseTxn(to , data):
     if data == "":
         data = os.urandom(24)
-    txin = TxInput(bytearray(), -1, None, data)
-    txout = TxOutput(prm.mineReward, to)
-
+    txin = TxInput([], -1, [], data.encode().hex())
+    txout = NewTxOutput(prm.mineReward, to.encode())
     tx = Transaction(bytearray(), [txin], [txout])
     tx.ID = tx.Hash()
     return tx

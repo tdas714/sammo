@@ -3,6 +3,9 @@ import os
 import sys
 import params as prm
 from transaction import CoinbaseTxn
+from block import Genesis
+
+
 class Blockchain():
     def __init__(self, lastHash, database):
        self.lastHash = lastHash
@@ -43,4 +46,4 @@ def InitBlockchain(nodeid, address):
     return chain
  
 if __name__ == '__main__':
-    InitBlockchain('2000', "address")
+    InitBlockchain('2000', '14u7fa9s5V8YnueZgmpwWDguRze585B52B')
