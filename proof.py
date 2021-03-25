@@ -7,30 +7,28 @@ class ProofOfWork():
         self.target = target
 
     def Initdata(self, nonce):
-        data = [[]]
         dat = []
-        
+
         dat.append(self.block.prevhash)
         dat.append(self.block.HashTransactions())
         dat.append(ToHex(int(nonce)))
         dat.append(ToHex(int(self.target)))
-        input(dat)
-        data.append(dat)
-        data.append(bytearray())
-        return data
+        dat = ''.join(dat)
+        return dat.encode()
 
     def run(self):
         nonce = 0
         while True:
             data = self.Initdata(nonce)
-            input(data)
             datahash = sha256(data).hexdigest()
-            print('\r', datahash)
+            print(datahash, end='\r')
             if datahash.startswith('0'*self.target):
                 break
             else:
                 nonce+=1
         print()
+        print(nonce)
+        input('Next')
         return nonce, datahash
         
 def NewProof(block):
@@ -38,5 +36,5 @@ def NewProof(block):
     return proof
 
 def ToHex(num):
-    bytes_big = num.to_bytes(2, 'big')
-    return bytes_big
+    bytes_big = num.to_bytes(8, 'big')
+    return bytes_big.hex()
