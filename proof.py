@@ -26,9 +26,6 @@ class ProofOfWork():
                 break
             else:
                 nonce+=1
-        print()
-        print(nonce)
-        input('Next')
         return nonce, datahash
         
 def NewProof(block):
