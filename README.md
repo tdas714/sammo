@@ -11,8 +11,8 @@ as a final product. Instade it is foundation for building any blockchain network
    `python main.py -CB`
 4. list address: `python main.py -L`
 5. check balance: `python main.py -GB [your address]`
-6. send token: `python main.py -S [your amount] -T [your address] -F [receiver address]`
-   for inbstant mining of the new block without sending it to the network just add `--mine` at the end of above command.
+6. send token: `python main.py -S [your amount] -T [your address] -F [receiver address]`.
+   for instant mining of the new block without sending it to the network just add `--mine` at the end of above command.
 
 Open up multiple windows of your preferred terminal. Follow step:1 and step:2 for each terminal.Create blockchain for one of those teminal(for the first time).
 
