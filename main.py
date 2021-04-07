@@ -1,9 +1,17 @@
-import os
 import argparse
+import sys
+import os
+from wallets import wallets, wallet
+from blockchain import blockchain, block, proof
+import params as prm
+from transactions import transaction, tx, utxo
+import pickle
+from base58 import b58decode
+import time
+import asyncio
+from network import network
 
-def no_of_argu(*args):
-    return(len(args))
-
+#================Functions====================
 def str2bool(v):
     if isinstance(v, bool):
        return v
@@ -25,124 +33,138 @@ def checkargs(args, parser):
 def errorargs(parser):
     print(parser.print_help())
 
+
 if __name__ == '__main__':
+
     parser = argparse.ArgumentParser(
             description='Sammo Blockchain Command-Line arguments')
-    parser.add_argument('--getbalance', '-GB', const=True, nargs='?', type=str2bool, help='get the balance for an address - requires -> address')
-    parser.add_argument('--address', type=str, help='address for a wallet specific program')
-    parser.add_argument('--createblockchain', '-CB', type=bool, help='Creates a new blockchain - requires -> address')
-    parser.add_argument('--printchain', '-P', type=bool, help='Prints the complete blockchain')
-    parser.add_argument('--send', '-S', type=bool, help='Sends amount from address to address - requires -> from, to, amount')
-    parser.add_argument('--from', '-F', type=str, help='Address from amount to send - requires - send, to, amount')
+    parser.add_argument('--getbalance', '-GB', type=str, help='Get balance of given address. - required Address')
+    parser.add_argument('--createblockchain', '-CB', type=str, help='Creates initial blockchain, and mines genesis block - required Address')
+    parser.add_argument('--printchain', '-P', const=True, nargs='?', type=str2bool, help='Prints the complete blockchain')
+    parser.add_argument('--send', '-S', type=int, help='Sends amount from address to address - requires -> from, to')
+    parser.add_argument('--sender', '-F', type=str, help='Address from amount to send - requires - send, to, amount')
     parser.add_argument('--to', '-T', type=str, help='Address to send the amount - requires -> from, send, amount')
-    parser.add_argument('--amount', '-A', type=int, help='Amount to send - requires -> to, from, amount')
-    parser.add_argument('--createwallet', '-CW', type=bool, help='Creates a wallet for the user')
-    parser.add_argument('--listaddress', '-L', type=str2bool, const=True, nargs='?', help='List of address created for a wallet')
-    parser.add_argument('--reindexutxo', '-R', type=bool, help='RE-Indexing unspent transaction')
-    parser.add_argument('--startnode', '-SN', type=bool, help='Starts the network node - requires -> miner')
-    parser.add_argument('--miner', '-M', type=str, help='Sets the node as miner requires -> startmnode')
-
+    parser.add_argument('--createwallet', '-CW', const=True, nargs='?', type=str2bool, help='Creates a wallet for the user')
+    parser.add_argument('--listaddress', '-L', const=True, nargs='?', type=str2bool, help='List of address created for a wallet')
+    parser.add_argument('--reindexutxo', '-R', const=True, nargs='?', type=str2bool, help='RE-Indexing unspent transaction')
+    parser.add_argument('--startnode', '-SN', type=str, help='Starts node in given address')
+    parser.add_argument('--miner', '-M', const=True, nargs='?', type=str2bool, help='Sets the node as miner.')
+    
     args = parser.parse_args()
+    #===
+
+    if not os.path.exists(prm.dataPath):
+        os.mkdir(prm.dataPath)
+
     checkargs(args, parser)
-    #================================================
-
     nodeid = os.environ.get('NODE_ID')
-
-
-    if args.startnode:
-        if args.miner == None:
-            print('No miner address found!')
-        else:
-            wallet.validateAddress(args.miner)
-        network.StartServer(nodeid, args.miner)
-
-    if args.R:
-        chain = ContinueBlockchain(nodeid)
-
-        utxoSet = UTXOSet(chain)
-        utxoSet.reIndex()
-
-        count = utxoSet.countTransactions()
-        print("Done! There are %d transactions in the UTXO set.\n", count)
     
-    if args.L:
-        wallets, _ = wallet.createWallets(nodeid)
-        addresses = wallets.getAllAddresses()
+    if os.path.exists(f'data/kn{nodeid}.pkl'):
+        with open(f'data/kn{nodeid}.pkl', 'rb') as f:
+            knownNodes = pickle.load(f)
+    else:
+        knownNodes = [('localhost', 2000)]
+    
+    if nodeid == None:
+        print('NODE_ID is not found')
+        sys.exit()
+    #===List Addresses
+    if args.listaddress:
+        wallets, done = wallets.createWallets(nodeid, prm)
+        if done:
+            addresses = wallets.getAllAddresses()
+        else:
+            print('No Wallet file found!')
+            sys.exit()
         for addr in addresses:
-            pritn(addr)
-    
-    if args.CW:
-        wallets, _ = wallet.createWallets(nodeid)
-        address = wallets.addWallet(nodeid)
-        wallets.saveFile(nodeid)
-        print("New address is: %s\n", address)
-    
-    if args.P:
-        chain = ContinueBlockchain(nodeid)
-
-        for block in chain:
-            print("Hash: %x\n", block.blockhash)
-            print("Prev. hash: %x\n", block.prevhash)
-            proof = newProof(block)
-            print("PoW: %s\n", proof.validate())
-            for tx in block.transactions:
-                print(tx)
-    
-    if args.CW:
-        if args.address == None:
-            print('No address is given')
-        if validateAddress(args.address) == False:
-            print('Address is not valid!')
-        chain = InitBlockchain(nodeid, args.address)
-        utxoSet = UTXOSet(chain)
-        utxoSet.reIndex()
-        print('Finished')
-
-    if args.GB:
-        if args.address == None:
-            print('No address is given')
-        if validateAddress(args.address) == False:
-            print('Address is not valid!')
-        chain = InitBlockchain(nodeid, args.address)
-        utxoSet = UTXOSet(chain)
-
-        balance = 0
-        pubkeyHash = list(b58decode(address.encode()))
-        pubkeyHash = pubkeyHash[4:len(pubkeyHash)-4]
-        utxos = UTXOSet.findUnspentTransactions(bytes(pubkeyHash))
-
-        for out in utxos:
-            balance += out.value
-        print("Balance of %s: %d\n", address, balance)
-
-    if args.S:
-        if args.F == None:
-            print('No sender address is given')
-        if args.T == None:
-            print('No receiver address is given')
-        if args.A == None:
-            print('Amount is not given')
-        
-        if validateAddress(args.F) == False:
-            print('Sender address is not valid!')
-        if validateAddress(args.T) == False:
-            print('Receiver address is not valid!')
-        
-        chain = InitBlockchain(nodeid, args.address)
-        utxoSet = UTXOSet(chain)
-
-        wallets = createWallets(nodeid)
-        tx = NewTransaction(wallet, args.T, args.A, utxoSet)
-        
-        if args.M:
-            cbtx = CoinbaseTx(args.F, '')
-            txs = [cbtx, tx]
-            block = chain.mineblock(txs)
-            utxoSet.update(block)
+            print(addr)
+    #===Create Wallet
+    if args.createwallet:
+        wallets, done = wallets.createWallets(nodeid, prm)
+        if not done:
+            address = wallets.addWallet()
+            wallets.saveFile(nodeid)
+            print("New address is: ", address)
         else:
-            network.sendTx(network.knownNodes[0], tx)
+            print('Wallet File already exists!')
+            sys.exit()
+    #===Create Blockchain
+    if args.createblockchain:
+        if wallet.validateAddress(args.createblockchain, prm) == False:
+            print('Address is not valid!')
+            sys.exit()
+        chain = blockchain.initBlockchain(nodeid, args.createblockchain, prm)
+       
+        utxoSet = utxo.UTXOSet(chain)
+        utxoSet.reIndex(nodeid, prm)
+        print('Finished')
+    #====
+    if args.printchain:
+        chain = blockchain.ContinueBlockchain(nodeid, prm)
+        for k in chain.Database:
+            if not k.startswith(prm.utxoPrefix):
+                block = chain.database[k]
+                print(pickle.loads(block))
+                prf = proof.newProof(block, prm)
+                print("PoW: ", prf.validate())
+     #====
+    if args.getbalance:
+        if wallet.validateAddress(args.getbalance, prm) == False:
+            print('Address is not valid!')
+            sys.exit()
+        chain = blockchain.ContinueBlockchain(nodeid, prm)
+        utxoSet = utxo.UTXOSet(chain)
+        utxoSet.reIndex(nodeid, prm)
+        balance = 0
+        pubKeyHash = b58decode(args.getbalance.encode())
+        pubkeyHash = pubKeyHash[1:len(pubKeyHash)-prm.checksumLength]
+        
+        utxos = utxoSet.findUnspentTransactions(pubkeyHash, prm)
+        for out in utxos:
+            balance += out.Value
+        print(f"Balance of {args.getbalance} is {balance}")
+    #====
+    if args.send:
+        if args.sender == None:
+            print('No sender address is given')
+            sys.exit()
+        if args.to == None:
+            print('No receiver address is given')
+            sys.exit()
+
+        if wallet.validateAddress(args.sender, prm) == False:
+            print('Sender address is not valid!')
+            sys.exit()
+        if wallet.validateAddress(args.to, prm) == False:
+            print('Receiver address is not valid!')
+            sys.exit()
+        
+        chain = blockchain.ContinueBlockchain(nodeid, prm)
+        utxoSet = utxo.UTXOSet(chain)
+        ws, done = wallets.createWallets(nodeid, prm)
+        if done:
+            wallet = ws.getWallet(args.sender)
+        else:
+            print('Wallet File does not exists! Create One!')
+            sys.exit()
+        
+        tx = transaction.newTransaction(wallet, args.to, args.send, utxoSet, prm)
+        if args.miner:
+            cbtx = transaction.CoinbaseTxn(args.sender, time.time(), prm)
+            txs = [cbtx, tx]
+
+            block = chain.mineBlock(txs, prm)
+            if block != None:
+                utxoSet.update(block, nodeid, prm)
+        else:
+            for node in knownNodes:
+                if node != ('localhost', nodeid):
+                    network.sendTx(node, tx, ('localhost', nodeid), knownNodes)
             print('Transaction sent')
         print('Success!')
-
-
-
+    #=====
+    if args.startnode:
+        if not wallet.validateAddress(args.startnode, prm):
+            print('Address is not valid')
+            system.exit()
+        asyncio.run(network.startServer(nodeid, args.startnode, knownNodes))

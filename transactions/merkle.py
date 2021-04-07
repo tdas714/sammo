@@ -14,11 +14,11 @@ def NewMerkleNode(left, right, data):
     node = MerkleNode()
 
     if left==None and right==None:
-        datahash = sha256(data).hexdigest()
+        datahash = sha256(data).digest()
         node.Data = datahash
     else:
-        prevhashs = left.Data.append(right.Data)
-        datahash = sha256(prevhashs).hexdigest()
+        prevhashs = left.Data + right.Data
+        datahash = sha256(prevhashs).digest()
         node.Data = datahash
 
     node.Left = left
@@ -33,17 +33,16 @@ def NewMerkleTree(data):
     if len(nodes) == 0:
         print("No merkle nodes found")
         sys.exit()
-
+    
     while True:
         if len(nodes) <= 1:
             break
         if len(nodes)%2 != 0:
             nodes.append(nodes[len(nodes)-1])
         level = []
-        for i in range(len(nodes), 2):
+        for i in range(0, len(nodes), 2):
             level.append(NewMerkleNode(nodes[i], nodes[i+1], None))
-        
         nodes = level
+    
     tree = MerkleTree(nodes[0])
     return tree
-
