@@ -1,7 +1,7 @@
 # sammo(REGNET)
-Python Based AI based peer-to-peer payment system.
+Python Based blockchiain network project focusing on scalability, faster transaction rate, low barrier of entry.
 
-This network is fully functioning and capable of any transactions anonymously in a de-cenvtralized manner. But I don't recoomand it
+This network is fully functioning and capable of any transactions anonymously in a de-cenvtralized manner. But we don't recoomand it
 as a final product. Instade it is foundation for building any blockchain network.
 ###Instructions:
 1. Set node id :  `export NODE_ID=[node id]`. 
@@ -18,4 +18,5 @@ Open up multiple windows of your preferred terminal. Follow step:1 and step:2 fo
 For more informaton: `python main.py --help`
 
 ### TO-DO:
-1. Implement ML for consensus algorithm.
+Goal is to make a distributed Hyperledger to compete with current financial system in terms of scalability, cost of transaction, accessibility.
+1. Make conversion between cross currency exchange more smoother.
